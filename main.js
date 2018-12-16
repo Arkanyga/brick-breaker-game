@@ -7,7 +7,8 @@ const PADDLE_WIDTH = 100,
   BRICK_GAP = 2,
   BRICK_COLS = 10,
   BRICK_ROWS = 14,
-  canvas = document.getElementById('gameCanvas'),
+  brickGrid = new Array(BRICK_COLS * BRICK_ROWS);
+canvas = document.getElementById('gameCanvas'),
   canvasContext = canvas.getContext('2d');
 
 let ballX = canvas.width / 2,
@@ -21,7 +22,7 @@ let ballX = canvas.width / 2,
 
 
 window.onload = function () {
-  console.log(ballX, ballY)
+  resetBricks();
   canvas.addEventListener('mousemove', function (e) {
     let mousePos = calculateMousePos(e);
     paddleX = mousePos.x - (PADDLE_WIDTH / 2);
@@ -70,7 +71,7 @@ function calculateMousePos(e) {
 function moveEverething() {
   if (ballX < ballRadius || ballX > canvas.width - ballRadius) {
     ballSpeedX *= -1;
-  } else if (ballY > 0.9 * canvas.height - ballRadius && ballX > paddleX && ballX < paddleX + PADDLE_WIDTH && ballSpeedY > 0) {
+  } else if (ballY > 0.9 * canvas.height - ballRadius && ballY < 0.9 * canvas.height + PADDLE_THICKNESS && ballX > paddleX && ballX < paddleX + PADDLE_WIDTH && ballSpeedY > 0) {
     ballSpeedY *= -1;
     let deltaX = ballX - (paddleX + (PADDLE_WIDTH / 2));
     ballSpeedX = deltaX * 0.15;
@@ -81,6 +82,7 @@ function moveEverething() {
   }
   ballX += ballSpeedX;
   ballY += ballSpeedY;
+  removeBrickAtPixelCoord(ballX, ballY)
 }
 
 function ballReset() {
@@ -98,10 +100,41 @@ function ballReset() {
 function drawBricks() {
   for (let col = 0; col < BRICK_COLS; col++) {
     for (let row = 0; row < BRICK_ROWS; row++) {
-      let brickLeftEdgeX = col * BRICK_W;
-      let brickTopEdgeY = row * BRICK_H;
-      colorRect(brickLeftEdgeX, brickTopEdgeY, BRICK_W - BRICK_GAP,
-        BRICK_H - BRICK_GAP, 'blue')
+      if (isBrickAtTileCoord(col, row)) {
+        let brickLeftEdgeX = col * BRICK_W;
+        let brickTopEdgeY = row * BRICK_H;
+        colorRect(brickLeftEdgeX, brickTopEdgeY, BRICK_W - BRICK_GAP,
+          BRICK_H - BRICK_GAP, 'blue')
+      }
     }
   }
+}
+
+function resetBricks() {
+  for (let i = 0; i < BRICK_COLS * BRICK_ROWS; i++) {
+    brickGrid[i] = 1;
+  }
+}
+
+function isBrickAtTileCoord(brickTileCol, brickTileRow) {
+  let brickIndex = brickTileToIndex(brickTileCol, brickTileRow)
+  return (brickGrid[brickIndex] === 1)
+}
+
+
+//удаляем кирпис с индексом 0 при соприкосновении с шариком
+function removeBrickAtPixelCoord(pixelX, pixelY) {
+  let tileCol = Math.floor(pixelX / BRICK_W);
+  let tileRow = Math.floor(pixelY / BRICK_H);
+
+  //проверяем находится ли мяч в районе кирпичей
+  if (tileCol < 0 || tileCol >= BRICK_COLS || tileRow < 0 || tileRow >= BRICK_ROWS) {
+    return
+  }
+  let brickIndex = brickTileToIndex(tileCol, tileRow);
+  brickGrid[brickIndex] = 0;
+}
+
+function brickTileToIndex(tileCol, tileRow) {
+  return (tileCol + BRICK_COLS * tileRow)
 }
