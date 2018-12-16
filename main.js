@@ -3,10 +3,10 @@ const PADDLE_WIDTH = 100,
   PADDLE_THICKNESS = 10,
   WINNING_SCORE = 2,
   BRICK_W = 80,
-  BRICK_H = 20,
+  BRICK_H = 40,
   BRICK_GAP = 2,
   BRICK_COLS = 10,
-  BRICK_ROWS = 14,
+  BRICK_ROWS = 7,
   brickGrid = new Array(BRICK_COLS * BRICK_ROWS);
 canvas = document.getElementById('gameCanvas'),
   canvasContext = canvas.getContext('2d');
@@ -82,7 +82,9 @@ function moveEverething() {
   }
   ballX += ballSpeedX;
   ballY += ballSpeedY;
-  removeBrickAtPixelCoord(ballX, ballY)
+  if (checkForAndRemoveBrickAtPixelCoord(ballX, ballY)) {
+    ballSpeedY *= -1;
+  }
 }
 
 function ballReset() {
@@ -123,16 +125,19 @@ function isBrickAtTileCoord(brickTileCol, brickTileRow) {
 
 
 //удаляем кирпис с индексом 0 при соприкосновении с шариком
-function removeBrickAtPixelCoord(pixelX, pixelY) {
+function checkForAndRemoveBrickAtPixelCoord(pixelX, pixelY) {
   let tileCol = Math.floor(pixelX / BRICK_W);
   let tileRow = Math.floor(pixelY / BRICK_H);
-
   //проверяем находится ли мяч в районе кирпичей
   if (tileCol < 0 || tileCol >= BRICK_COLS || tileRow < 0 || tileRow >= BRICK_ROWS) {
     return
   }
+
   let brickIndex = brickTileToIndex(tileCol, tileRow);
-  brickGrid[brickIndex] = 0;
+  if (brickGrid[brickIndex] === 1) {
+    brickGrid[brickIndex] = 0;
+    return true
+  }
 }
 
 function brickTileToIndex(tileCol, tileRow) {
