@@ -2,6 +2,11 @@
 const PADDLE_WIDTH = 100,
   PADDLE_THICKNESS = 10,
   WINNING_SCORE = 2,
+  BRICK_W = 80,
+  BRICK_H = 20,
+  BRICK_GAP = 2,
+  BRICK_COLS = 10,
+  BRICK_ROWS = 14,
   canvas = document.getElementById('gameCanvas'),
   canvasContext = canvas.getContext('2d');
 
@@ -36,7 +41,8 @@ function drawEverething() {
   colorCircle(ballX, ballY, ballRadius, 'white');
   //paddle
   colorRect(paddleX, paddleY, PADDLE_WIDTH, PADDLE_THICKNESS, 'white');
-
+  //bricks
+  drawBricks()
 }
 
 function colorRect(topLeftX, topLeftY, boxWidth, boxHeight, fillColor) {
@@ -62,7 +68,6 @@ function calculateMousePos(e) {
 }
 
 function moveEverething() {
-  console.log(ballSpeedY)
   if (ballX < ballRadius || ballX > canvas.width - ballRadius) {
     ballSpeedX *= -1;
   } else if (ballY > 0.9 * canvas.height - ballRadius && ballX > paddleX && ballX < paddleX + PADDLE_WIDTH && ballSpeedY > 0) {
@@ -87,4 +92,16 @@ function ballReset() {
     ballSpeedX = -1 * speed;
     ballSpeedY = -1 * speed;
   }, 700)
+}
+
+
+function drawBricks() {
+  for (let col = 0; col < BRICK_COLS; col++) {
+    for (let row = 0; row < BRICK_ROWS; row++) {
+      let brickLeftEdgeX = col * BRICK_W;
+      let brickTopEdgeY = row * BRICK_H;
+      colorRect(brickLeftEdgeX, brickTopEdgeY, BRICK_W - BRICK_GAP,
+        BRICK_H - BRICK_GAP, 'blue')
+    }
+  }
 }
