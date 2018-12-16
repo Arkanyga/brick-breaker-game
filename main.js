@@ -82,9 +82,7 @@ function moveEverething() {
   }
   ballX += ballSpeedX;
   ballY += ballSpeedY;
-  if (checkForAndRemoveBrickAtPixelCoord(ballX, ballY)) {
-    ballSpeedY *= -1;
-  }
+  breakAndBounceOffBrickAtPixelCoord(ballX, ballY);
 }
 
 function ballReset() {
@@ -124,8 +122,7 @@ function isBrickAtTileCoord(brickTileCol, brickTileRow) {
 }
 
 
-//удаляем кирпис с индексом 0 при соприкосновении с шариком
-function checkForAndRemoveBrickAtPixelCoord(pixelX, pixelY) {
+function breakAndBounceOffBrickAtPixelCoord(pixelX, pixelY) {
   let tileCol = Math.floor(pixelX / BRICK_W);
   let tileRow = Math.floor(pixelY / BRICK_H);
   //проверяем находится ли мяч в районе кирпичей
@@ -133,10 +130,38 @@ function checkForAndRemoveBrickAtPixelCoord(pixelX, pixelY) {
     return
   }
 
+  //индекс ячейки в которую ударили
   let brickIndex = brickTileToIndex(tileCol, tileRow);
   if (brickGrid[brickIndex] === 1) {
+    let prevBallX = ballX - ballSpeedX;
+    let prevBallY = ballY - ballSpeedY;
+    let prevTileCol = Math.floor(prevBallX / BRICK_W);
+    let prevTileRow = Math.floor(prevBallY / BRICK_H);
+    let bothTestsFailed = true;
+    //если попадаем и меняется колонка то отскакивает горизонтально
+    if (prevTileCol != tileCol) {
+      let adjacentBrickIndex = brickTileToIndex(prevTileCol, tileRow);//свободна или нет ячейка в prevTileCol для теста 
+      if (brickGrid[adjacentBrickIndex] !== 1) {
+        ballSpeedX *= -1;
+        bothTestsFailed = false;
+      }
+    }
+    //если попадаем и меняется ряд то отскакивает вертикально
+    if (prevTileRow != tileRow) {
+      let adjacentBrickIndex = brickTileToIndex(tileCol, prevTileRow);//свободна или нет ячейка в prevTileCol для теста 
+      if (brickGrid[adjacentBrickIndex] !== 1) {
+        ballSpeedY *= -1;
+        bothTestsFailed = false;
+      }
+    }
+
+    //если попадаем наискосок в место где с двух сторон стоят клетки 
+    if (bothTestsFailed) {
+      ballSpeedY *= -1;
+      ballSpeedX *= -1;
+    }
+    //удаляем кирпич
     brickGrid[brickIndex] = 0;
-    return true
   }
 }
 
