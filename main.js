@@ -3,10 +3,10 @@ const PADDLE_WIDTH = 100,
   PADDLE_THICKNESS = 10,
   WINNING_SCORE = 2,
   BRICK_W = 80,
-  BRICK_H = 40,
+  BRICK_H = 20,
   BRICK_GAP = 2,
   BRICK_COLS = 10,
-  BRICK_ROWS = 7,
+  BRICK_ROWS = 14,
   brickGrid = new Array(BRICK_COLS * BRICK_ROWS);
 canvas = document.getElementById('gameCanvas'),
   canvasContext = canvas.getContext('2d');
@@ -14,10 +14,11 @@ canvas = document.getElementById('gameCanvas'),
 let ballX = canvas.width / 2,
   ballY = canvas.height / 2,
   speed = 5,
-  paddleX = 100,
+  paddleX = canvas.width / 2 - PADDLE_WIDTH / 2,
   paddleY = 0.9 * canvas.height,
-  ballSpeedX = speed,
+  ballSpeedX = 0,
   ballSpeedY = speed,
+  countBricks,
   ballRadius = 10;
 
 
@@ -25,7 +26,9 @@ window.onload = function () {
   resetBricks();
   canvas.addEventListener('mousemove', function (e) {
     let mousePos = calculateMousePos(e);
-    paddleX = mousePos.x - (PADDLE_WIDTH / 2);
+    ballX = mousePos.x;
+    ballY = mousePos.y;
+    // paddleX = mousePos.x - (PADDLE_WIDTH / 2);
   })
   let framesPerSecond = 60;
   setInterval(function () {
@@ -69,15 +72,21 @@ function calculateMousePos(e) {
 }
 
 function moveEverething() {
-  if (ballX < ballRadius || ballX > canvas.width - ballRadius) {
+  if (ballX < 0 || ballX > canvas.width) {
     ballSpeedX *= -1;
-  } else if (ballY > 0.9 * canvas.height - ballRadius && ballY < 0.9 * canvas.height + PADDLE_THICKNESS && ballX > paddleX && ballX < paddleX + PADDLE_WIDTH && ballSpeedY > 0) {
+  }
+
+  if (ballY > 0.9 * canvas.height - ballRadius && ballY < 0.9 * canvas.height + PADDLE_THICKNESS && ballX > paddleX && ballX < paddleX + PADDLE_WIDTH && ballSpeedY > 0) {
+    if (countBricks === 0) {
+      resetBricks();
+      ballReset();
+    }
     ballSpeedY *= -1;
     let deltaX = ballX - (paddleX + (PADDLE_WIDTH / 2));
     ballSpeedX = deltaX * 0.15;
-  } else if (ballY > canvas.height - ballRadius) {
+  } else if (ballY > canvas.height) {
     ballReset();
-  } else if (ballY < ballRadius) {
+  } else if (ballY < 0) {
     ballSpeedY *= -1;
   }
   ballX += ballSpeedX;
@@ -91,9 +100,9 @@ function ballReset() {
   ballSpeedX = 0;
   ballSpeedY = 0;
   setTimeout(function () {
-    ballSpeedX = -1 * speed;
-    ballSpeedY = -1 * speed;
-  }, 700)
+    ballSpeedX = 0;
+    ballSpeedY = speed;
+  }, 800)
 }
 
 
@@ -111,7 +120,8 @@ function drawBricks() {
 }
 
 function resetBricks() {
-  for (let i = 0; i < BRICK_COLS * BRICK_ROWS; i++) {
+  countBricks = BRICK_COLS * BRICK_ROWS;
+  for (let i = 0; i < countBricks; i++) {
     brickGrid[i] = 1;
   }
 }
@@ -162,6 +172,8 @@ function breakAndBounceOffBrickAtPixelCoord(pixelX, pixelY) {
     }
     //удаляем кирпич
     brickGrid[brickIndex] = 0;
+    countBricks--;
+    console.log(countBricks)
   }
 }
 
