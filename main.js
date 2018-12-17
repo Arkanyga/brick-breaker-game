@@ -6,8 +6,9 @@ const PADDLE_WIDTH = 100,
   BRICK_H = 20,
   BRICK_GAP = 2,
   BRICK_COLS = 10,
-  BRICK_ROWS = 14,
-  brickGrid = new Array(BRICK_COLS * BRICK_ROWS);
+  BRICK_ROWS_END = 14,
+  BRICK_ROWS_START = 3,
+  brickGrid = new Array(BRICK_COLS * BRICK_ROWS_END);
 canvas = document.getElementById('gameCanvas'),
   canvasContext = canvas.getContext('2d');
 
@@ -26,9 +27,8 @@ window.onload = function () {
   resetBricks();
   canvas.addEventListener('mousemove', function (e) {
     let mousePos = calculateMousePos(e);
-    ballX = mousePos.x;
-    ballY = mousePos.y;
-    // paddleX = mousePos.x - (PADDLE_WIDTH / 2);
+    paddleX = mousePos.x - (PADDLE_WIDTH / 2);
+
   })
   let framesPerSecond = 60;
   setInterval(function () {
@@ -108,22 +108,29 @@ function ballReset() {
 
 function drawBricks() {
   for (let col = 0; col < BRICK_COLS; col++) {
-    for (let row = 0; row < BRICK_ROWS; row++) {
+    for (let row = 0; row < BRICK_ROWS_END; row++) {
       if (isBrickAtTileCoord(col, row)) {
         let brickLeftEdgeX = col * BRICK_W;
         let brickTopEdgeY = row * BRICK_H;
         colorRect(brickLeftEdgeX, brickTopEdgeY, BRICK_W - BRICK_GAP,
-          BRICK_H - BRICK_GAP, 'blue')
+          BRICK_H - BRICK_GAP, 'blue');
       }
     }
   }
 }
 
+
 function resetBricks() {
-  countBricks = BRICK_COLS * BRICK_ROWS;
-  for (let i = 0; i < countBricks; i++) {
+  let countNoBricks = BRICK_COLS * BRICK_ROWS_START;
+  let countWithBricks = BRICK_COLS * BRICK_ROWS_END;
+  countBricks = countWithBricks - countNoBricks;
+  for (let i = 0; i < countNoBricks; i++) {
+    brickGrid[i] = 0;
+  }
+  for (let i = countNoBricks; i < countWithBricks; i++) {
     brickGrid[i] = 1;
   }
+
 }
 
 function isBrickAtTileCoord(brickTileCol, brickTileRow) {
@@ -136,7 +143,7 @@ function breakAndBounceOffBrickAtPixelCoord(pixelX, pixelY) {
   let tileCol = Math.floor(pixelX / BRICK_W);
   let tileRow = Math.floor(pixelY / BRICK_H);
   //проверяем находится ли мяч в районе кирпичей
-  if (tileCol < 0 || tileCol >= BRICK_COLS || tileRow < 0 || tileRow >= BRICK_ROWS) {
+  if (tileCol < 0 || tileCol >= BRICK_COLS || tileRow < 0 || tileRow >= BRICK_ROWS_END) {
     return
   }
 
@@ -173,7 +180,6 @@ function breakAndBounceOffBrickAtPixelCoord(pixelX, pixelY) {
     //удаляем кирпич
     brickGrid[brickIndex] = 0;
     countBricks--;
-    console.log(countBricks)
   }
 }
 
